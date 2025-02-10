@@ -1,206 +1,245 @@
 //Problem Statement: A Dictionary stores keywords & its meanings. Provide facility for adding new keywords, deleting keywords, updating values of any entry. Provide facility to display whole data sorted in ascending/descending order. Also find how many maximum comparisons may require for finding any keyword. Use Binary Search Tree for implementation.
 
-#include <iostream>
-#include <string>
+#include<iostream>
+#include<string.h>
 using namespace std;
 
-class node {
-   public:
-    string key, value;
-    node *left, *right;
-    node() {
-        key = "";
-        value = "";
-        left = NULL;
-        right = NULL;
-    }
-    node(string key, string value) {
-        this->key = key;
-        this->value = value;
-        left = NULL;
-        right = NULL;
-    }
+class node
+{
+public:
+ 	char k[20];
+ 	char m[20];
+ 	node  *left;
+ 	node * right;
 };
 
-class bst {
-   public:
-    node *root;
-    bst(){
-         root = NULL;
-    }
-    bst(string key, string value) { 
-        root = new node(key, value); 
-    }
-
-    bool insert(string, string);
-    string search(string);
-    bool update(string, string);
-    bool delete_key(string);
-    void display(node *cur);
-    
+class dict
+{
+public:
+ 		node *root;
+ 		void create();
+ 		void disp(node *);
+ 		void insert(node * root,node *temp);
+ 		int search(node *,char []);
+		int update(node *,char []);
+ 		node* del(node *,char []);
+ 		node * min(node *);
 };
-bool bst::insert(string key, string value) {
-    if (root == NULL) {
-        root = new node(key, value);
-        return 1;
-    }
+void dict :: create()
+{
+ 	node *temp;
+ 	int ch;
+	do
+ 	{
+  		temp = new node;
+ 		cout<<"\nEnter Keyword:";
+ 		 cin>>temp->k;
+  		cout<<"\nEnter Meaning:";
+  		cin>>temp->m;
+		temp->left = NULL;
+		temp->right = NULL;
+		if(root == NULL)
+  		{
+   			root = temp;
+  		}
+ 		 else
+ 		 {
+ 			insert(root, temp);
+  		}
+  		cout<<"\nDo u want to add more (y=1/n=0):";
+  		cin>>ch;
+ }
+ while(ch == 1);
+}
+void dict ::  insert(node * root,node *temp)
+{
+ if(strcmp (temp->k, root->k) < 0 )
+ {
+  		if(root->left == NULL)
+   		root->left = temp;
+ 		 else
+  		 insert(root->left,temp);
+ }
+ else
+ 	{ 
+		if(root->right == NULL)
+  		 	root->right = temp;
+  		else
+  			 insert(root->right,temp);
+ 	}
+}
+void dict:: disp(node * root)
+{
+ if( root != NULL)
+ {
+  		disp(root->left);
+  		cout<<"\n Key Word :"<<root->k;
+  		cout<<"\t Meaning :"<<root->m;
+  		disp(root->right);
+ }
+}
 
-    node *temp, *prev;
-    prev = root;
+int dict :: search(node * root,char k[20])
+{
+ int c=0;
+ while(root != NULL)
+ {
+ 		 c++;
+ 		 if(strcmp (k,root->k) == 0)
+ 		 {
+  			 cout<<"\nNo of Comparisons:"<<c;
+   			 return 1;
+  		 }
+ 		 if(strcmp (k, root->k) < 0)
+  			 root = root->left;
+         if(strcmp (k, root->k) > 0)
+ 			  root = root->right;
+ }
+return -1;
+}
+int dict :: update(node * root,char k[20])
+{
+ 	while(root != NULL)
+ 	{
+ 		 if(strcmp (k,root->k) == 0)
+ 		 {
+   			cout<<"\nEnter New Meaning of Keyword: "<<root->k;
+   			cin>>root->m;
+  			 return 1;
+  		 }
+  		if(strcmp (k, root->k) < 0)
+   			root = root->left;
+  		if(strcmp (k, root->k) > 0)
+  			 root = root->right;
+}
+ return -1;
+}
+
+node* dict :: del(node * root,char k[20])
+{
+ 	node *temp;
+if(root == NULL)
+ {
+  		cout<<"\nNo Keyword in tree ";
+  		return root;
+ }
+if (strcmp(k,root->k) < 0)
+ {
+    root->left = del(root->left, k);
+    return root;
+ }
+ if (strcmp(k,root->k) > 0)
+ {
+	root->right = del(root->right, k);
+    return root;
+ }
+if (root->right==NULL&&root->left==NULL)
+ {
     temp = root;
-    while (temp != NULL) {
-        prev = temp;
-        if (temp->key == key) {
-            return 0;
-        } else if (temp->key < key) {
-            temp = temp->right;
-        } else {
-            temp = temp->left;
-        }
-    }
-    if (prev->key < key) {
-        prev->right = new node(key, value);
-    } else {
-        prev->left = new node(key, value);
-    }
-    return 1;
+    delete temp;
+    return NULL;
+ }
+if(root->right==NULL)
+ {
+  		temp = root;
+  		root = root->left;
+		delete temp;
+  		return root;
+ }
+ 	 else if(root->left==NULL)
+  	{
+  		temp = root;
+  		root = root->right;
+  		delete temp;
+	 	return root;
+ 	 }
+	temp = min(root->right);
+ 	strcpy(root->k,temp->k);
+ 	root->right = del(root->right, temp->k);
+ 	 return root;
 }
-
-string bst::search(string key) {
-    node *temp = root;
-    while (temp != NULL) {
-        if (temp->key == key) {
-            return temp->value;
-        } else if (temp->key < key) {
-            temp = temp->right;
-        } else {
-            temp = temp->left;
-        }
-    }
-    return "\0"; 
+node * dict :: min(node *q)
+{
+ 	while(q->left != NULL)
+ {
+  		q = q->left;
+ }
+ 	return q;
 }
-
-bool bst::update(string key, string value) {
-    node *temp;
-    temp = root;
-    while (temp != NULL) {
-        if (temp->key == key) {
-            temp->value = value;
-            return 1;
-        } else if (temp->key < key) {
-            temp = temp->right;
-        } else {
-            temp = temp->left;
-        }
-    }
-    return 0;
-}
-
-bool bst::delete_key(string key) {
-    node **cur = &root;
-    while (*cur != nullptr) {
-        if ((*cur)->key == key) {
-            node *temp = *cur;
-            if (temp->left == nullptr)
-                *cur = temp->right;
-            else if (temp->right == nullptr)
-                *cur = temp->left;
-            else {
-                node *successor = temp->right;
-                while (successor->left != nullptr)
-                    successor = successor->left;
-                temp->key = successor->key;
-                temp->value = successor->value;
-                cur = &temp->right;
-                key = successor->key;
-                continue;
-            }
-            delete temp;
-            return true;
-        } else if ((*cur)->key < key)
-            cur = &((*cur)->right);
-        else
-            cur = &((*cur)->left);
-    }
-    return false;
-}
-
-void bst::display(node *cur) {
-    if (cur == NULL) {
-        return;
-    }
-    display(cur->left);
-    cout << cur->key << " : " << cur->value << endl;
-    display(cur->right);
-}
-
-int main() {
-    bst tree;
-    int ch;
-    string k, v, ans;
-    do {
-        cout << "--- MAIN MENU ---" << endl;
-        cout << "1 -> Insert" << endl;
-        cout << "2 -> Search" << endl;
-        cout << "3 -> Update" << endl;
-        cout << "4 -> Delete" << endl;
-        cout << "5 -> Display Ascending" << endl;
-        cout << "0 -> Exit" << endl;
-        cout << "Choose an option (0-5):\t";
-        cin >> ch;
-        switch (ch) {
-            case 1:
-                cout << "Key (word) to insert:\t";
-                cin >> k;
-                cout << "Value (meaning):\t";
-                cin >> v;
-                if (tree.insert(k, v)) {
-                    cout << "Element insertion successful." << endl;
-                } else {
-                    cout << "Element already exists." << endl;
-                }
-                break;
-            case 2:
-                cout << "Key (word) to search:\t";
-                cin >> k;
-                ans = tree.search(k);
-                if (ans == "\0") {
-                    cout << "Element does not exist." << endl;
-                } else {
-                    cout << "Value (meaning) is:\t" << ans << endl;
-                }
-                break;
-            case 3:
-                cout << "Key (word) to update:\t";
-                cin >> k;
-                cout << "New value (meaning):\t";
-                cin >> v;
-                if (tree.update(k, v)) {
-                    cout << "Element updated." << endl;
-                } else {
-                    cout << "Element does not exist." << endl;
-                }
-                break;
-            case 4:
-                cout << "Key (word) to delete:\t";
-                cin >> k;
-                if (tree.delete_key(k)) {
-                    cout << "Element deletion successful." << endl;
-                } else {
-                    cout << "Element does not exist." << endl;
-                }
-                break;
-            case 5:
-                cout << "Data in ascending order:\t" << endl;
-                tree.display(tree.root);
-                break;
-            case 0:
-                cout << "\n// END OF CODE\n";
-                break;
-            default:
-                cout << "Please choose a valid option (0-5)." << endl;
-                break;
-        }
-    } while (ch != 0);
-    return 0;
+int main()
+{
+ 	int ch;
+ 	dict d;
+ d.root = NULL;
+do
+ 	{
+cout<<"\nMenu\n1.Create\n2.Disp\n3.Search\n4.Update\n5.Delete\nEnter Ur CH:";
+  cin>>ch;
+switch(ch)
+  		{
+case 1: d.create();
+ 				 break;
+case 2: if(d.root == NULL)
+  				{
+  					cout<<"\nNo any Keyword";
+ 				 }
+  				else
+  				{
+ 					 d.disp(d.root);
+ 				 }
+ 				 break;
+case 3: if(d.root == NULL)
+ 				{
+cout<<"\nDictionary is Empty. First add keywords then try again ";
+ }
+  				else
+ 				{
+cout<<"\nEnter Keyword which u want to search:";
+  					char k[20];
+  					cin>>k;
+					 if( d.search(d.root,k) == 1)
+  						cout<<"\nKeyword Found";
+  					else
+  						cout<<"\nKeyword Not Found";
+ }
+  				break;
+case 4:
+  				if(d.root == NULL)
+  				{
+cout<<"\nDictionary is Empty. First add keywords then try again ";
+ }
+  				else
+  				{
+  				cout<<"\nEnter Keyword for which you want to update meaning :";
+ 				 char k[20];
+  				cin>>k;
+  				if(d.update(d.root,k) == 1)
+  					cout<<"\nMeaning Updated";
+ 				 else
+  					cout<<"\nMeaning Not Found";
+  				}
+ 				 break;
+case 5:
+  if(d.root == NULL)
+ 			 {
+cout<<"\nDictionary is Empty. First add keywords then try again ";
+  			}
+ 			 else
+  			{
+  			cout<<"\nEnter Keyword which u want to delete:";
+  			char k[20];
+  			cin>>k;
+ 			 if(d.root == NULL)
+  			{
+  				cout<<"\nNo any Keyword";
+  			}
+  			else
+  			{
+  				d.root = d.del(d.root,k);
+    			}
+  		 }
+ 	 }
+ }
+ while(ch<=5);
+ return 0;
 }
