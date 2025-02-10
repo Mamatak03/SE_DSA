@@ -1,245 +1,142 @@
-//Problem Statement: A Dictionary stores keywords & its meanings. Provide facility for adding new keywords, deleting keywords, updating values of any entry. Provide facility to display whole data sorted in ascending/descending order. Also find how many maximum comparisons may require for finding any keyword. Use Binary Search Tree for implementation.
-
+//Problem Statement: Construct an expression tree from the given prefix expression eg. +--a*bc/def and traverse it using postordertraversal(non recursive) and then delete the entire tree.
 #include<iostream>
 #include<string.h>
 using namespace std;
 
-class node
-{
-public:
- 	char k[20];
- 	char m[20];
- 	node  *left;
- 	node * right;
+struct node{
+    char data;
+    node *left;
+    node *right;
 };
 
-class dict
-{
-public:
- 		node *root;
- 		void create();
- 		void disp(node *);
- 		void insert(node * root,node *temp);
- 		int search(node *,char []);
-		int update(node *,char []);
- 		node* del(node *,char []);
- 		node * min(node *);
+class tree{
+    char prefix[50];
+    public:
+        node *top;
+        void expression(char []);
+        void display(node *);
+        void deletion(node *node);
 };
-void dict :: create()
-{
- 	node *temp;
- 	int ch;
-	do
- 	{
-  		temp = new node;
- 		cout<<"\nEnter Keyword:";
- 		 cin>>temp->k;
-  		cout<<"\nEnter Meaning:";
-  		cin>>temp->m;
-		temp->left = NULL;
-		temp->right = NULL;
-		if(root == NULL)
-  		{
-   			root = temp;
-  		}
- 		 else
- 		 {
- 			insert(root, temp);
-  		}
-  		cout<<"\nDo u want to add more (y=1/n=0):";
-  		cin>>ch;
- }
- while(ch == 1);
-}
-void dict ::  insert(node * root,node *temp)
-{
- if(strcmp (temp->k, root->k) < 0 )
- {
-  		if(root->left == NULL)
-   		root->left = temp;
- 		 else
-  		 insert(root->left,temp);
- }
- else
- 	{ 
-		if(root->right == NULL)
-  		 	root->right = temp;
-  		else
-  			 insert(root->right,temp);
- 	}
-}
-void dict:: disp(node * root)
-{
- if( root != NULL)
- {
-  		disp(root->left);
-  		cout<<"\n Key Word :"<<root->k;
-  		cout<<"\t Meaning :"<<root->m;
-  		disp(root->right);
- }
+
+class stack1{
+    public:
+        node *data[30];
+        int top;
+        stack1(){
+            top=-1;
+        }
+        int empty(){
+            if(top==-1){
+                return 1;
+            }
+            return 0;
+        }
+        void push(node *p){
+            data[++top]=p;
+        }
+        
+        node *pop(){
+        
+            return(data[top--]);
+        }
+};
+
+void tree::expression(char prefix[]){
+    char c;
+    stack1 s;
+    node *t1,*t2;
+    int len,i;
+    len=strlen(prefix);
+    for(i=len-1;i>=0;i--){
+        top = new node;
+        top->left=NULL;
+        top->right=NULL;
+        
+        if(isalpha(prefix[i])){
+            top->data=prefix[i];
+            s.push(top);
+        }else if(prefix[i]=='+'||prefix[i]=='-'||prefix[i]=='*'||prefix[i]=='/'){
+            t2 = s.pop();
+            t1=s.pop();
+            top->data=prefix[i];
+            top->left = t2;
+            top->right=t1;
+            s.push(top);
+        }
+    }
+    top = s.pop();
 }
 
-int dict :: search(node * root,char k[20])
-{
- int c=0;
- while(root != NULL)
- {
- 		 c++;
- 		 if(strcmp (k,root->k) == 0)
- 		 {
-  			 cout<<"\nNo of Comparisons:"<<c;
-   			 return 1;
-  		 }
- 		 if(strcmp (k, root->k) < 0)
-  			 root = root->left;
-         if(strcmp (k, root->k) > 0)
- 			  root = root->right;
- }
-return -1;
-}
-int dict :: update(node * root,char k[20])
-{
- 	while(root != NULL)
- 	{
- 		 if(strcmp (k,root->k) == 0)
- 		 {
-   			cout<<"\nEnter New Meaning of Keyword: "<<root->k;
-   			cin>>root->m;
-  			 return 1;
-  		 }
-  		if(strcmp (k, root->k) < 0)
-   			root = root->left;
-  		if(strcmp (k, root->k) > 0)
-  			 root = root->right;
-}
- return -1;
+void tree::display(node *top){
+    stack1 s1,s2;
+    
+    node *T = top;
+    s1.push(T);
+    while(!s1.empty()){
+        T = s1.pop();
+        s2.push(T);
+        
+        if(T->left!=NULL){
+            s1.push(T->left);
+        }
+        
+        if(T->right!=NULL){
+            s1.push(T->right);
+        }
+    }
+    
+    while(!s2.empty()){
+        
+        top = s2.pop();
+        cout<<top->data;
+        
+    }
+    cout<<endl;
 }
 
-node* dict :: del(node * root,char k[20])
-{
- 	node *temp;
-if(root == NULL)
- {
-  		cout<<"\nNo Keyword in tree ";
-  		return root;
- }
-if (strcmp(k,root->k) < 0)
- {
-    root->left = del(root->left, k);
-    return root;
- }
- if (strcmp(k,root->k) > 0)
- {
-	root->right = del(root->right, k);
-    return root;
- }
-if (root->right==NULL&&root->left==NULL)
- {
-    temp = root;
-    delete temp;
-    return NULL;
- }
-if(root->right==NULL)
- {
-  		temp = root;
-  		root = root->left;
-		delete temp;
-  		return root;
- }
- 	 else if(root->left==NULL)
-  	{
-  		temp = root;
-  		root = root->right;
-  		delete temp;
-	 	return root;
- 	 }
-	temp = min(root->right);
- 	strcpy(root->k,temp->k);
- 	root->right = del(root->right, temp->k);
- 	 return root;
+void tree::deletion(node *node){
+    if(node==NULL){
+        return;
+    }
+    deletion(node->left);
+    deletion(node->right);
+    cout<<"Deleting node: "<<node->data<<endl;
+    free(node);
 }
-node * dict :: min(node *q)
-{
- 	while(q->left != NULL)
- {
-  		q = q->left;
- }
- 	return q;
+
+int main(){
+    tree t;
+    char exp1[20];
+    
+    int ch;
+    do{
+        cout<<"1 -> Enter prefix expression"<<endl;
+        cout<<"2 -> Display postfix Expression"<<endl;
+        cout<<"3 -> Deletion"<<endl;
+        cout<<"4 -> Exit"<<endl;
+        cout<<"Choose an option (1-4):\t";
+        cin>>ch;
+        
+        switch(ch){
+        
+            case 1:
+                cout<<"Enter the expression (eg.: +--a*bc/def):\t";
+                cin>>exp1;
+                t.expression(exp1);
+                break;
+            case 2:
+                t.display(t.top);
+                break;
+            case 3:
+                t.deletion(t.top);
+                break;
+            case 4:
+                cout<<"\n// END OF CODE\n"<<endl;
+                break;
+            default:
+                cout<<"Choose a valid option (1-4).";
+                break;
+        }
+    }while(ch!=4);
 }
-int main()
-{
- 	int ch;
- 	dict d;
- d.root = NULL;
-do
- 	{
-cout<<"\nMenu\n1.Create\n2.Disp\n3.Search\n4.Update\n5.Delete\nEnter Ur CH:";
-  cin>>ch;
-switch(ch)
-  		{
-case 1: d.create();
- 				 break;
-case 2: if(d.root == NULL)
-  				{
-  					cout<<"\nNo any Keyword";
- 				 }
-  				else
-  				{
- 					 d.disp(d.root);
- 				 }
- 				 break;
-case 3: if(d.root == NULL)
- 				{
-cout<<"\nDictionary is Empty. First add keywords then try again ";
- }
-  				else
- 				{
-cout<<"\nEnter Keyword which u want to search:";
-  					char k[20];
-  					cin>>k;
-					 if( d.search(d.root,k) == 1)
-  						cout<<"\nKeyword Found";
-  					else
-  						cout<<"\nKeyword Not Found";
- }
-  				break;
-case 4:
-  				if(d.root == NULL)
-  				{
-cout<<"\nDictionary is Empty. First add keywords then try again ";
- }
-  				else
-  				{
-  				cout<<"\nEnter Keyword for which you want to update meaning :";
- 				 char k[20];
-  				cin>>k;
-  				if(d.update(d.root,k) == 1)
-  					cout<<"\nMeaning Updated";
- 				 else
-  					cout<<"\nMeaning Not Found";
-  				}
- 				 break;
-case 5:
-  if(d.root == NULL)
- 			 {
-cout<<"\nDictionary is Empty. First add keywords then try again ";
-  			}
- 			 else
-  			{
-  			cout<<"\nEnter Keyword which u want to delete:";
-  			char k[20];
-  			cin>>k;
- 			 if(d.root == NULL)
-  			{
-  				cout<<"\nNo any Keyword";
-  			}
-  			else
-  			{
-  				d.root = d.del(d.root,k);
-    			}
-  		 }
- 	 }
- }
- while(ch<=5);
- return 0;
-}
+
